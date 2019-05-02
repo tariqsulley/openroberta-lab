@@ -12,8 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import de.fhg.iais.roberta.util.*;
-import de.fhg.iais.roberta.util.Statistics;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -27,12 +25,20 @@ import de.fhg.iais.roberta.main.MailManagement;
 import de.fhg.iais.roberta.persistence.LostPasswordProcessor;
 import de.fhg.iais.roberta.persistence.PendingEmailConfirmationsProcessor;
 import de.fhg.iais.roberta.persistence.UserProcessor;
+import de.fhg.iais.roberta.persistence.bo.Group;
 import de.fhg.iais.roberta.persistence.bo.LostPassword;
 import de.fhg.iais.roberta.persistence.bo.PendingEmailConfirmations;
 import de.fhg.iais.roberta.persistence.bo.User;
 import de.fhg.iais.roberta.persistence.util.DbSession;
 import de.fhg.iais.roberta.persistence.util.HttpSessionState;
 import de.fhg.iais.roberta.robotCommunication.RobotCommunicator;
+import de.fhg.iais.roberta.util.AliveData;
+import de.fhg.iais.roberta.util.ClientLogger;
+import de.fhg.iais.roberta.util.Key;
+import de.fhg.iais.roberta.util.ServerProperties;
+import de.fhg.iais.roberta.util.Statistics;
+import de.fhg.iais.roberta.util.Util;
+import de.fhg.iais.roberta.util.Util1;
 
 @Path("/user")
 public class ClientUser {
@@ -123,13 +129,15 @@ public class ClientUser {
                 Statistics.info("UserLogout");
             } else if ( cmd.equals("createUser") ) {
                 String account = request.getString("accountName");
+                //TODO: write something sensible
+                Group group = null;
                 String password = request.getString("password");
                 String email = request.getString("userEmail");
                 String userName = request.getString("userName");
                 String role = request.getString("role");
                 //String tag = request.getString("tag");
                 boolean isYoungerThen14 = request.getString("isYoungerThen14").equals("1");
-                up.createUser(account, password, userName, role, email, null, isYoungerThen14);
+                up.createUser(account, group, password, userName, role, email, null, isYoungerThen14);
                 if ( this.isPublicServer && !email.equals("") && up.isOk() ) {
                     String lang = request.getString("language");
                     PendingEmailConfirmations confirmation = pendingConfirmationProcessor.createEmailConfirmation(account);
@@ -178,7 +186,7 @@ public class ClientUser {
                 boolean isExpired = true;
                 if ( lostPassword != null ) {
                     Date currentTime = new Date();
-                    isExpired = (currentTime.getTime() - lostPassword.getCreated().getTime()) / 3600000.0 > 24;
+                    isExpired = ((currentTime.getTime() - lostPassword.getCreated().getTime()) / 3600000.0) > 24;
                 }
                 if ( isExpired ) {
                     up.setSuccess(Key.USER_PASSWORD_RECOVERY_EXPIRED_URL);
@@ -222,7 +230,7 @@ public class ClientUser {
                 String account = request.getString("accountName");
                 String lang = request.getString("language");
                 User user = up.getUser(account);
-                if ( this.isPublicServer && user != null && !user.getEmail().equals("") ) {
+                if ( this.isPublicServer && (user != null) && !user.getEmail().equals("") ) {
                     PendingEmailConfirmations confirmation = pendingConfirmationProcessor.createEmailConfirmation(account);
                     // TODO ask here again for the age
                     sendActivationMail(up, confirmation.getUrlPostfix(), account, user.getEmail(), lang, false);
@@ -246,7 +254,7 @@ public class ClientUser {
                 response.put("rc", "ok");
                 // Util.addResultInfo(response, up); // should not be necessary
 
-            } else if ( cmd.equals("setStatusText") && userId == 1 ) {
+            } else if ( cmd.equals("setStatusText") && (userId == 1) ) {
                 statusText[0] = request.getString("english");
                 statusText[1] = request.getString("german");
                 statusTextTimestamp = request.getLong("timestamp");

@@ -18,7 +18,7 @@ public class PendingEmailConfirmationsProcessor extends AbstractProcessor {
             setError(Key.USER_UPDATE_ERROR_ACCOUNT_WRONG, account);
         } else {
             UserDao userDao = new UserDao(this.dbSession);
-            User user = userDao.loadUser(account);
+            User user = userDao.loadUser(null, account);
             if ( user != null ) {
                 return createEmailConfirmation(user.getId());
             }
