@@ -143,7 +143,7 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
     @Override
     public Void visitVarDeclaration(VarDeclaration<Void> var) {
         this.usedGlobalVarInFunctions.add(var.getName());
-        this.sb.append(var.getName());
+        this.sb.append(var.getCodeSafeName());
         this.sb.append(" = ");
         if ( !var.getValue().getKind().hasName("EMPTY_EXPR") ) {
             if ( var.getValue().getKind().hasName("EXPR_LIST") ) {
