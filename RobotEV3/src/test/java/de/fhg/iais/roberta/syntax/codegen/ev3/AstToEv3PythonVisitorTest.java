@@ -582,7 +582,7 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
                 + "def test():\n"
                 + "    global ___variablenName\n"
                 + "    if True: return 'red'\n"
-                + "    hal.drawText(str(variablenName), 0, 0)\n"
+                + "    hal.drawText(str(___variablenName), 0, 0)\n"
                 + "    return 'none'\n\n"
                 + "def run():\n"
                 + "    global ___variablenName\n"
@@ -724,10 +724,10 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
             "" //
                 + IMPORTS
                 + GLOBALS
-                + "\nvariablenName = 0\n"
-                + "variablenName2 = True\n"
+                + "\n___variablenName = 0\n"
+                + "___variablenName2 = True\n"
                 + "def test1(___x, ___x2):\n"
-                + "    global variablenName, variablenName2\n"
+                + "    global ___variablenName, ___variablenName2\n"
                 + "    hal.drawText(\"Hallo\", ___x, ___x2)\n\n"
                 + "def test2():\n"
                 + "    global ___variablenName, ___variablenName2\n"

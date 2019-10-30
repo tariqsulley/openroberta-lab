@@ -33,6 +33,7 @@ import de.fhg.iais.roberta.syntax.lang.expr.MathConst;
 import de.fhg.iais.roberta.syntax.lang.expr.NullConst;
 import de.fhg.iais.roberta.syntax.lang.expr.NumConst;
 import de.fhg.iais.roberta.syntax.lang.expr.Unary;
+import de.fhg.iais.roberta.syntax.lang.expr.Var;
 import de.fhg.iais.roberta.syntax.lang.expr.VarDeclaration;
 import de.fhg.iais.roberta.syntax.lang.functions.FunctionNames;
 import de.fhg.iais.roberta.syntax.lang.functions.GetSubFunct;
@@ -650,7 +651,7 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
         this.sb.append("def ").append(methodVoid.getMethodName()).append('(');
         List<String> paramList = new ArrayList<>();
         for ( Expr<Void> l : methodVoid.getParameters().get() ) {
-            paramList.add(((VarDeclaration<Void>) l).getName());
+            paramList.add(((VarDeclaration<Void>) l).getCodeSafeName());
         }
         this.sb.append(String.join(", ", paramList));
         this.sb.append("):");
@@ -662,7 +663,11 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
         } else {
             if ( !this.usedGlobalVarInFunctions.isEmpty() ) {
                 nlIndent();
-                this.sb.append("global " + String.join(", ", this.usedGlobalVarInFunctions));
+                List<String> usedGVIF = new ArrayList<>();
+                for ( String var : this.usedGlobalVarInFunctions ) {
+                    usedGVIF.add("___" + var);
+                }
+                this.sb.append("global " + String.join(", ", usedGVIF));
             }
             methodVoid.getBody().accept(this);
         }
@@ -676,18 +681,25 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
         this.sb.append("def ").append(methodReturn.getMethodName()).append('(');
         List<String> paramList = new ArrayList<>();
         for ( Expr<Void> l : methodReturn.getParameters().get() ) {
-            paramList.add(((VarDeclaration<Void>) l).getName());
+            paramList.add(((VarDeclaration<Void>) l).getCodeSafeName());
         }
         this.sb.append(String.join(", ", paramList));
         this.sb.append("):");
         incrIndentation();
         if ( !this.usedGlobalVarInFunctions.isEmpty() ) {
             nlIndent();
-            this.sb.append("global " + String.join(", ", this.usedGlobalVarInFunctions));
+            List<String> usedGVIF = new ArrayList<>();
+            for ( String var : this.usedGlobalVarInFunctions ) {
+                usedGVIF.add("___" + var);
+            }
+            this.sb.append("global " + String.join(", ", usedGVIF));
         }
         methodReturn.getBody().accept(this);
         nlIndent();
         this.sb.append("return ");
+        if ( methodReturn.getReturnValue() instanceof Var<?> ) {
+            this.sb.append("___");
+        }
         methodReturn.getReturnValue().accept(this);
         decrIndentation();
         return null;
