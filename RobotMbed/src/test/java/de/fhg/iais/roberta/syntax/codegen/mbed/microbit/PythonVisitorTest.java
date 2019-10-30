@@ -700,7 +700,7 @@ public class PythonVisitorTest extends MicrobitAstTest {
                 + "            while True:\n"
                 + "                if microbit.button_a.is_pressed() == True:\n"
                 + "                    for ___j in range(int(1), int(10), int(1)):\n"
-                + "                        if j < 10:\n"
+                + "                        if ___j < 10:\n"
                 + "                            continue\n"
                 + "                    raise ContinueLoop\n"
                 + "                    break\n"

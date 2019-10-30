@@ -5,7 +5,6 @@ import static de.fhg.iais.roberta.visitor.codegen.utilities.ColorSensorUtils.isH
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import de.fhg.iais.roberta.bean.CodeGeneratorSetupBean;
@@ -574,11 +573,7 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
         incrIndentation();
         if ( !this.usedGlobalVarInFunctions.isEmpty() ) {
             nlIndent();
-            List<String> usedGVIF = new ArrayList<>();
-            for ( String var : this.usedGlobalVarInFunctions ) {
-                usedGVIF.add("___" + var);
-            }
-            this.sb.append("global ").append(String.join(", ", usedGVIF));
+            this.sb.append("global ").append(String.join(", ", this.usedGlobalVarInFunctions));
         } else {
             addPassIfProgramIsEmpty();
         }

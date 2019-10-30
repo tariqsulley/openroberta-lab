@@ -27,7 +27,7 @@ ___item5 = [None, None, None]
 ___item6 = 0
 ___item7 = True
 def run():
-    global ___item, ___item2, ___item7, ___item4, ___item3, ___item6, ___item5
+    global ___item, ___item2, ___item3, ___item4, ___item5, ___item6, ___item7
     ___item = [0] * 5
     ___item2 = [True] * 5
     ___item3 = [""] * 5

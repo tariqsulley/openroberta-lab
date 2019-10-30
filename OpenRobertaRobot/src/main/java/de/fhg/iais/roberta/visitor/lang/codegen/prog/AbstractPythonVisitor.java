@@ -8,12 +8,12 @@ import static de.fhg.iais.roberta.mode.general.ListElementOperations.SET;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.misc.OrderedHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,6 @@ import de.fhg.iais.roberta.syntax.lang.expr.MathConst;
 import de.fhg.iais.roberta.syntax.lang.expr.NullConst;
 import de.fhg.iais.roberta.syntax.lang.expr.NumConst;
 import de.fhg.iais.roberta.syntax.lang.expr.Unary;
-import de.fhg.iais.roberta.syntax.lang.expr.Var;
 import de.fhg.iais.roberta.syntax.lang.expr.VarDeclaration;
 import de.fhg.iais.roberta.syntax.lang.functions.FunctionNames;
 import de.fhg.iais.roberta.syntax.lang.functions.GetSubFunct;
@@ -75,7 +74,7 @@ import de.fhg.iais.roberta.visitor.lang.codegen.AbstractLanguageVisitor;
 public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPythonVisitor.class);
 
-    protected Set<String> usedGlobalVarInFunctions = new HashSet<>();
+    protected Set<String> usedGlobalVarInFunctions = new OrderedHashSet<>();
 
     /**
      * initialize the Python code generator visitor.
@@ -143,7 +142,7 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
 
     @Override
     public Void visitVarDeclaration(VarDeclaration<Void> var) {
-        this.usedGlobalVarInFunctions.add(var.getName());
+        this.usedGlobalVarInFunctions.add(var.getCodeSafeName());
         this.sb.append(var.getCodeSafeName());
         this.sb.append(" = ");
         if ( !var.getValue().getKind().hasName("EMPTY_EXPR") ) {
@@ -167,7 +166,7 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
     public Void visitBinary(Binary<Void> binary) {
         try {
             VarDeclaration<Void> variablePart = (VarDeclaration<Void>) binary.getLeft();
-            this.sb.append(variablePart.getName());
+            this.sb.append(variablePart.getCodeSafeName());
         } catch ( ClassCastException e ) {
             generateSubExpr(this.sb, false, binary.getLeft(), binary);
         }
@@ -663,11 +662,7 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
         } else {
             if ( !this.usedGlobalVarInFunctions.isEmpty() ) {
                 nlIndent();
-                List<String> usedGVIF = new ArrayList<>();
-                for ( String var : this.usedGlobalVarInFunctions ) {
-                    usedGVIF.add("___" + var);
-                }
-                this.sb.append("global " + String.join(", ", usedGVIF));
+                this.sb.append("global " + String.join(", ", this.usedGlobalVarInFunctions));
             }
             methodVoid.getBody().accept(this);
         }
@@ -688,18 +683,11 @@ public abstract class AbstractPythonVisitor extends AbstractLanguageVisitor {
         incrIndentation();
         if ( !this.usedGlobalVarInFunctions.isEmpty() ) {
             nlIndent();
-            List<String> usedGVIF = new ArrayList<>();
-            for ( String var : this.usedGlobalVarInFunctions ) {
-                usedGVIF.add("___" + var);
-            }
-            this.sb.append("global " + String.join(", ", usedGVIF));
+            this.sb.append("global " + String.join(", ", this.usedGlobalVarInFunctions));
         }
         methodReturn.getBody().accept(this);
         nlIndent();
         this.sb.append("return ");
-        if ( methodReturn.getReturnValue() instanceof Var<?> ) {
-            this.sb.append("___");
-        }
         methodReturn.getReturnValue().accept(this);
         decrIndentation();
         return null;

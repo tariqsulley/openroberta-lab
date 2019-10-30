@@ -307,7 +307,7 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
                 + "    hal.drawText(str(___item), 0, 0)\n"
                 + "    hal.drawText(str(___item2), 0, 0)\n"
                 + "    hal.drawText(str(___item3), 0, 0)\n"
-                + "    item3 = False\n\n"
+                + "    ___item3 = False\n\n"
                 + MAIN_METHOD;
 
         UnitTestHelper
@@ -609,7 +609,7 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
                 + "def test(___x, ___x2):\n"
                 + "    global ___variablenName\n"
                 + "    hal.drawText(str(___x2), ___x, 0)\n"
-                + "    return x\n\n"
+                + "    return ___x\n\n"
                 + "def run():\n"
                 + "    global ___variablenName\n"
                 + "    hal.drawText(str(test(0, ___variablenName)), 0, 0)\n"
@@ -1066,10 +1066,10 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
                 + "___Element2 = 0\n"
                 + "___Element3 = 'none'\n"
                 + "def macheEtwas(___x):\n"
-                + "    global ___Element, ___Element3, ___Element2\n"
+                + "    global ___Element, ___Element2, ___Element3\n"
                 + "    ___Element3 = 'none'\n\n"
                 + "def run():\n"
-                + "    global ___Element, ___Element3, ___Element2\n"
+                + "    global ___Element, ___Element2, ___Element3\n"
                 + "\n"
                 + MAIN_METHOD;
 
@@ -1092,14 +1092,14 @@ public class AstToEv3PythonVisitorTest extends Ev3DevAstTest {
                 + "___Element2 = 0\n"
                 + "___Element3 = 'none'\n"
                 + "def macheEtwas(___x):\n"
-                + "    global ___Element, ___Element3, ___Element2\n"
+                + "    global ___Element, ___Element2, ___Element3\n"
                 + "    ___Element3 = 'none'\n\n"
                 + "def macheEtwas2():\n"
-                + "    global ___Element, ___Element3, ___Element2\n"
+                + "    global ___Element, ___Element2, ___Element3\n"
                 + "    ___Element = 0\n"
                 + "    return ___Element2\n\n"
                 + "def run():\n"
-                + "    global ___Element, ___Element3, ___Element2\n"
+                + "    global ___Element, ___Element2, ___Element3\n"
                 + "\n"
                 + MAIN_METHOD;
 

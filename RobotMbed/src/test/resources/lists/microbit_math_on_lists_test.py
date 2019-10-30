@@ -17,7 +17,7 @@ ___item7 = []
 ___item8 = []
 ___item9 = 0
 def run():
-    global timer1, ___item, ___item2, ___item8, ___item7, ___item9, ___item4, ___item3, ___item6, ___item5
+    global timer1, ___item, ___item2, ___item3, ___item4, ___item5, ___item6, ___item7, ___item8, ___item9
     ___item9 = sum(___item)
     ___item9 = min(___item)
     ___item9 = max(___item)

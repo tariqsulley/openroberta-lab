@@ -30,7 +30,7 @@ ___item8 = "123"
 ___item9 = 'white'
 ___item10 = None
 def run():
-    global ___item, ___item2, ___item8, ___item7, ___item9, ___item4, ___item3, ___item10, ___item6, ___item5
+    global ___item, ___item2, ___item3, ___item4, ___item5, ___item6, ___item7, ___item8, ___item9, ___item10
     ___item[0] = 0
     ___item[-1 -0] = 0
     ___item[0] = 0
