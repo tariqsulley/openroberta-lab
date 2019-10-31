@@ -5,9 +5,11 @@ import static de.fhg.iais.roberta.visitor.codegen.utilities.ColorSensorUtils.isH
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.fhg.iais.roberta.bean.CodeGeneratorSetupBean;
+import de.fhg.iais.roberta.bean.OraBean;
 import de.fhg.iais.roberta.bean.UsedHardwareBean;
 import de.fhg.iais.roberta.components.ConfigurationAst;
 import de.fhg.iais.roberta.components.ConfigurationComponent;
@@ -86,12 +88,11 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
      * @param programPhrases to generate the code from
      */
     public Ev3PythonVisitor(
-        UsedHardwareBean usedHardwareBean,
-        CodeGeneratorSetupBean codeGeneratorSetupBean,
+        List<ArrayList<Phrase<Void>>> programPhrases,
         ConfigurationAst brickConfiguration,
-        ArrayList<ArrayList<Phrase<Void>>> programPhrases,
-        ILanguage language) {
-        super(usedHardwareBean, codeGeneratorSetupBean, programPhrases);
+        ILanguage language,
+        OraBean... beans) {
+        super(programPhrases, beans);
         this.brickConfiguration = brickConfiguration;
         this.language = language;
 
@@ -246,7 +247,7 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
 
     private boolean isActorOnPort(String port) {
         boolean isActorOnPort = false;
-        for ( UsedActor actor : this.usedHardwareBean.getUsedActors() ) {
+        for ( UsedActor actor : this.getBean(UsedHardwareBean.class).getUsedActors() ) {
             isActorOnPort = isActorOnPort ? isActorOnPort : actor.getPort().equals(port);
         }
         return isActorOnPort;
@@ -636,13 +637,13 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
 
     @Override
     public Void visitMathRandomFloatFunct(MathRandomFloatFunct<Void> mathRandomFloatFunct) {
-        this.sb.append(this.codeGeneratorSetupBean.getHelperMethodGenerator().getHelperMethodName(FunctionNames.RANDOM_DOUBLE)).append("()");
+        this.sb.append(this.getBean(CodeGeneratorSetupBean.class).getHelperMethodGenerator().getHelperMethodName(FunctionNames.RANDOM_DOUBLE)).append("()");
         return null;
     }
 
     @Override
     public Void visitMathRandomIntFunct(MathRandomIntFunct<Void> mathRandomIntFunct) {
-        this.sb.append(this.codeGeneratorSetupBean.getHelperMethodGenerator().getHelperMethodName(FunctionNames.RANDOM)).append("(");
+        this.sb.append(this.getBean(CodeGeneratorSetupBean.class).getHelperMethodGenerator().getHelperMethodName(FunctionNames.RANDOM)).append("(");
         mathRandomIntFunct.getParam().get(0).accept(this);
         this.sb.append(", ");
         mathRandomIntFunct.getParam().get(1).accept(this);
@@ -680,7 +681,7 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
         nlIndent();
         this.sb.append("hal = Hal(_brickConfiguration)");
 
-        if ( this.usedHardwareBean.isActorUsed(SC.VOICE) ) {
+        if ( this.getBean(UsedHardwareBean.class).isActorUsed(SC.VOICE) ) {
             nlIndent();
             this.sb.append("hal.setLanguage(\"");
             this.sb.append(TTSLanguageMapper.getLanguageString(this.language));
@@ -728,11 +729,11 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
     }
 
     private String generateUsedImages() {
-        if ( this.usedHardwareBean.getUsedImages().size() != 0 ) {
+        if ( !this.getBean(UsedHardwareBean.class).getUsedImages().isEmpty() ) {
             StringBuilder sb = new StringBuilder();
 
             sb.append("predefinedImages = {\n");
-            for ( String image : this.usedHardwareBean.getUsedImages() ) {
+            for ( String image : this.getBean(UsedHardwareBean.class).getUsedImages() ) {
                 sb.append("    '" + image + "': u'" + this.predefinedImage.get(image) + "',\n");
             }
             sb.append("}\n");
@@ -755,7 +756,7 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
     }
 
     private boolean isActorUsed(ConfigurationComponent actor, String port) {
-        for ( UsedActor usedActor : this.usedHardwareBean.getUsedActors() ) {
+        for ( UsedActor usedActor : this.getBean(UsedHardwareBean.class).getUsedActors() ) {
             String usedActorComponentType = this.brickConfiguration.getConfigurationComponent(usedActor.getPort()).getComponentType();
             if ( port.equals(usedActor.getPort()) && actor.getComponentType().equals(usedActorComponentType) ) {
                 return true;
@@ -778,7 +779,7 @@ public final class Ev3PythonVisitor extends AbstractPythonVisitor implements IEv
     }
 
     private boolean isSensorUsed(ConfigurationComponent sensor, String port) {
-        for ( UsedSensor usedSensor : this.usedHardwareBean.getUsedSensors() ) {
+        for ( UsedSensor usedSensor : this.getBean(UsedHardwareBean.class).getUsedSensors() ) {
             String usedSctorComponentType = this.brickConfiguration.getConfigurationComponent(usedSensor.getPort()).getComponentType();
             if ( port.equals(usedSensor.getPort()) && sensor.getComponentType().equals(usedSctorComponentType) ) {
                 return true;

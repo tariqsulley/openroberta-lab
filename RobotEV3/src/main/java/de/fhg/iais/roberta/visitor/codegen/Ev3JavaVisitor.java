@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.fhg.iais.roberta.bean.CodeGeneratorSetupBean;
+import de.fhg.iais.roberta.bean.OraBean;
 import de.fhg.iais.roberta.bean.UsedHardwareBean;
 import de.fhg.iais.roberta.components.ConfigurationAst;
 import de.fhg.iais.roberta.components.ConfigurationComponent;
@@ -107,13 +108,12 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
      * @param brickConfiguration hardware configuration of the brick
      */
     public Ev3JavaVisitor(
-        UsedHardwareBean usedHardwareBean,
-        CodeGeneratorSetupBean codeGeneratorSetupBean,
-        String programName,
-        ArrayList<ArrayList<Phrase<Void>>> programPhrases,
+        List<ArrayList<Phrase<Void>>> programPhrases,
         ConfigurationAst brickConfiguration,
-        ILanguage language) {
-        super(usedHardwareBean, codeGeneratorSetupBean, programPhrases, programName);
+        String programName,
+        ILanguage language,
+        OraBean... beans) {
+        super(programPhrases, programName, beans);
 
         this.brickConfiguration = brickConfiguration;
         this.language = language;
@@ -137,7 +137,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
         nlIndent();
         this.sb.append(generateRegenerateUsedSensors());
         nlIndent();
-        if ( !this.usedHardwareBean.getUsedImages().isEmpty() ) {
+        if ( !this.getBean(UsedHardwareBean.class).getUsedImages().isEmpty() ) {
             this.sb.append("private static Map<String, String> predefinedImages = new HashMap<String, String>();");
             nlIndent();
             nlIndent();
@@ -349,7 +349,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
 
     private boolean isActorOnPort(String port) {
         boolean isActorOnPort = false;
-        for ( UsedActor actor : this.usedHardwareBean.getUsedActors() ) {
+        for ( UsedActor actor : this.getBean(UsedHardwareBean.class).getUsedActors() ) {
             isActorOnPort = isActorOnPort ? isActorOnPort : actor.getPort().equals(port);
         }
         return isActorOnPort;
@@ -671,7 +671,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
             this.sb.append("hal.startLogging();");
             this.isInDebugMode = true;
         }
-        if ( this.usedHardwareBean.isActorUsed(SC.VOICE) && !this.brickConfiguration.getRobotName().equals("ev3lejosv0") ) {
+        if ( this.getBean(UsedHardwareBean.class).isActorUsed(SC.VOICE) && !this.brickConfiguration.getRobotName().equals("ev3lejosv0") ) {
             nlIndent();
             this.sb.append("hal.setLanguage(\"");
             this.sb.append(TTSLanguageMapper.getLanguageString(this.language));
@@ -984,7 +984,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
     }
 
     private void generateUsedImages() {
-        for ( String image : this.usedHardwareBean.getUsedImages() ) {
+        for ( String image : this.getBean(UsedHardwareBean.class).getUsedImages() ) {
             this.sb.append("predefinedImages.put(\"" + image + "\", \"" + this.predefinedImage.get(image) + "\");");
             nlIndent();
         }
@@ -1042,7 +1042,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
     private void appendSensors() {
         for ( ConfigurationComponent sensor : this.brickConfiguration.getSensors() ) {
             boolean isUsed = false;
-            for ( UsedSensor usedSensor : this.usedHardwareBean.getUsedSensors() ) {
+            for ( UsedSensor usedSensor : this.getBean(UsedHardwareBean.class).getUsedSensors() ) {
                 if (sensor.getComponentType().contains(usedSensor.getType()) && usedSensor.getPort().equals(sensor.getUserDefinedPortName())) {
                     isUsed = true;
                 }
@@ -1060,7 +1060,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
     private void appendActors() {
         for ( ConfigurationComponent actor : this.brickConfiguration.getActors() ) {
             boolean isUsed = false;
-            for ( UsedActor usedActor : this.usedHardwareBean.getUsedActors() ) {
+            for ( UsedActor usedActor : this.getBean(UsedHardwareBean.class).getUsedActors() ) {
                 if (usedActor.getType().equals(actor.getComponentType()) && usedActor.getPort().equals(actor.getUserDefinedPortName())) {
                     isUsed = true;
                 }
@@ -1078,7 +1078,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
     private String generateRegenerateUsedSensors() {
         StringBuilder sb = new StringBuilder();
         String arrayOfSensors = "";
-        for ( UsedSensor usedSensor : this.usedHardwareBean.getUsedSensors() ) {
+        for ( UsedSensor usedSensor : this.getBean(UsedHardwareBean.class).getUsedSensors() ) {
             if (!usedSensor.getType().equals(SC.TIMER)) { // TODO this should be handled differently
                 arrayOfSensors += generateRegenerateUsedSensor(usedSensor);
                 arrayOfSensors += ", ";
@@ -1086,7 +1086,7 @@ public final class Ev3JavaVisitor extends AbstractJavaVisitor implements IEv3Vis
         }
 
         sb.append("private Set<UsedSensor> usedSensors = " + "new LinkedHashSet<UsedSensor>(");
-        if ( !this.usedHardwareBean.getUsedSensors().isEmpty() ) {
+        if ( !this.getBean(UsedHardwareBean.class).getUsedSensors().isEmpty() ) {
             sb.append("Arrays.asList(" + arrayOfSensors.substring(0, arrayOfSensors.length() - 2) + ")");
         }
         sb.append(");");
