@@ -77,6 +77,9 @@ define([ 'require', 'exports', 'log', 'util', 'comm', 'message', 'guiState.contr
         });
         $('#galleryTable').bootstrapTable('togglePagination');
     }
+        function Test(){
+         alert("Open Roberta Is Awesome");
+        }
 
     function initGalleryListEvents() {
 
